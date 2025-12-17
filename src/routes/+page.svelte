@@ -3,19 +3,19 @@
 	import { marked } from 'marked';
 	import { fade, fly, slide } from 'svelte/transition';
 
-	let isChatOpen = false;
-	let userMessage = '';
-	let isLoading = false;
-	let chatElement: HTMLElement | null = null;
+	let isChatOpen = $state(false);
+	let userMessage = $state('');
+	let isLoading = $state(false);
+	let chatElement = $state<HTMLElement | null>(null);
 
-	let chatHistory = [
+	let chatHistory = $state([
 		{
 			sender: 'ai',
 			text: 'Olá! Sou a IA da Isabela. Pergunte-me sobre a experiência dela, projetos ou skills! 🚀'
 		}
-	];
+	]);
 
-	const projects = [
+	const projects = $state([
 		{
 			title: 'Reachout',
 			status: 'Em Produção',
@@ -46,7 +46,7 @@
 			color: 'from-purple-600 to-indigo-700',
 			badgeColor: 'bg-purple-500/20 text-purple-400'
 		}
-	];
+	]);
 
 	const systemPrompt = `
     Você é a 'Isabela AI', uma assistente virtual no portfólio da Engenheira de Software Isabela Lima.
@@ -54,18 +54,18 @@
     Fatos: Founder da Viperise, Especialista em JS/Python/IA, Pós em IA na Prominas.
   `;
 
-	function scrollToBottom() {
+	const scrollToBottom = () => {
 		setTimeout(() => {
 			if (chatElement)
 				(chatElement as HTMLElement).scrollTop = (chatElement as HTMLElement).scrollHeight;
 		}, 50);
-	}
+	};
 
-	function sendSuggestion(text: string) {
+	const sendSuggestion = (text: string) => {
 		userMessage = text;
 		handleChatSubmit();
-	}
-	async function handleChatSubmit() {
+	};
+	const handleChatSubmit = async () => {
 		if (!userMessage.trim()) return;
 
 		const text = userMessage;
@@ -95,7 +95,7 @@
 			isLoading = false;
 			scrollToBottom();
 		}
-	}
+	};
 </script>
 
 <svelte:head>
@@ -169,7 +169,7 @@
 						Ver Projetos
 					</a>
 					<button
-						on:click={() => (isChatOpen = !isChatOpen)}
+						onclick={() => (isChatOpen = !isChatOpen)}
 						class="group flex items-center justify-center gap-2 rounded-lg border border-slate-600 px-8 py-3 font-semibold text-slate-300 transition-all hover:border-indigo-500 hover:text-indigo-500"
 					>
 						<i class="fas fa-sparkles text-yellow-400 group-hover:animate-spin"></i> Chat com IA
@@ -315,7 +315,7 @@ print(IsabelaLima().build_future())</code
 		<button
 			in:fade
 			out:fade
-			on:click={() => (isChatOpen = true)}
+			onclick={() => (isChatOpen = true)}
 			aria-label="Abrir chat com IA"
 			class="animate-bounce-slow fixed right-6 bottom-6 z-50 rounded-full bg-indigo-500 p-4 text-white shadow-2xl transition-transform hover:scale-110 hover:bg-indigo-600"
 		>
@@ -343,7 +343,7 @@ print(IsabelaLima().build_future())</code
 					</div>
 				</div>
 				<button
-					on:click={() => (isChatOpen = false)}
+					onclick={() => (isChatOpen = false)}
 					aria-label="Fechar chat com IA"
 					aria-hidden="true"
 					class="text-white/80 hover:text-white"
@@ -396,13 +396,13 @@ print(IsabelaLima().build_future())</code
 			{#if chatHistory.length === 1}
 				<div class="no-scrollbar flex gap-2 overflow-x-auto bg-slate-900/50 px-4 py-2">
 					<button
-						on:click={() => sendSuggestion('Quais são seus projetos principais?')}
+						onclick={() => sendSuggestion('Quais são seus projetos principais?')}
 						class="rounded-full border border-slate-700 bg-slate-800 px-3 py-1 text-xs whitespace-nowrap text-slate-400 transition-colors hover:bg-slate-700"
 					>
 						🏆 Projetos
 					</button>
 					<button
-						on:click={() => sendSuggestion('Conte sobre sua experiência em IA.')}
+						onclick={() => sendSuggestion('Conte sobre sua experiência em IA.')}
 						class="rounded-full border border-slate-700 bg-slate-800 px-3 py-1 text-xs whitespace-nowrap text-slate-400 transition-colors hover:bg-slate-700"
 					>
 						🤖 Exp. em IA
@@ -411,7 +411,13 @@ print(IsabelaLima().build_future())</code
 			{/if}
 
 			<div class="border-t border-slate-700 bg-slate-800/50 p-4">
-				<form on:submit|preventDefault={handleChatSubmit} class="relative flex gap-2">
+				<form
+					onsubmit={(e) => {
+						e.preventDefault();
+						handleChatSubmit();
+					}}
+					class="relative flex gap-2"
+				>
 					<input
 						bind:value={userMessage}
 						type="text"
